@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..600,0..100;1,9..144,300..600,0..100&family=Hanken+Grotesk:wght@400..600&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="assets/img/h-birthday-1100.webp" imagesrcset="assets/img/h-birthday-640.webp 640w, assets/img/h-birthday-1100.webp 1100w" imagesizes="(min-width: 900px) 40vw, 90vw">
-<link rel="stylesheet" href="assets/site.css?v=4">
+<link rel="stylesheet" href="assets/site.css?v=5">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Bakery","name":"Bottom Line Bakery","url":"https://www.bottomlinebakery.com/","telephone":"+1-706-955-7710","address":{"@type":"PostalAddress","streetAddress":"4534 Washington Rd, Suite 3","addressLocality":"Evans","addressRegion":"GA","postalCode":"30809","addressCountry":"US"},"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Tuesday","Wednesday","Thursday","Friday"],"opens":"10:00","closes":"18:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"10:00","closes":"16:00"}],"sameAs":["https://www.instagram.com/bottomlinebakery/","https://www.facebook.com/bottomlinebakery"]}
 </script>
@@ -143,12 +143,13 @@
     </div>
   </div>
 
-  <!-- THE CASE: the menu, with a photograph that follows the line you point at -->
+  <!-- THE CASE: the menu. Every line shows something: a photograph where the bakery has one, a drawing where it does not.
+       To swap a drawing for a photograph, replace the line's data-sketch with data-img and data-alt. -->
   <section class="case" id="menu" aria-labelledby="menu-h">
     <div class="wrap">
       <header class="head" data-reveal>
         <h2 id="menu-h">What's in the case</h2>
-        <p>Baked here every morning. Point at a line with a dot to see it, then order online for pickup or delivery.</p>
+        <p>Baked here every morning. Pick any line to see it, then order online for pickup or delivery.</p>
       </header>
       <div class="case__grid">
         <div class="case__list" data-reveal>
@@ -160,72 +161,72 @@
             <button class="tab" role="tab" id="t-boxes" aria-controls="p-boxes" aria-selected="false" tabindex="-1">Boxes</button>
           </div>
 
-          <div class="panel" role="tabpanel" id="p-pastries" aria-labelledby="t-pastries" data-default="menu-buns-900.webp" data-default-alt="A pan of cinnamon buns">
+          <div class="panel" role="tabpanel" id="p-pastries" aria-labelledby="t-pastries">
             <ul class="rows">
-              <li class="row has-pic" tabindex="0" data-img="menu-buns-900.webp" data-alt="A pan of cinnamon buns"><span class="row__name">Cinnamon buns</span><span class="row__price">from $5.99</span></li>
-              <li class="row"><span class="row__name">Croissant</span><span class="row__price">$3.99</span></li>
-              <li class="row"><span class="row__name">Almond croissant</span><span class="row__price">$4.75</span></li>
-              <li class="row"><span class="row__name">Chocolate croissant</span><span class="row__price">$4.75</span></li>
-              <li class="row"><span class="row__name">Scone</span><span class="row__price">$4.99</span></li>
-              <li class="row"><span class="row__name">Muffin</span><span class="row__price">$4.99</span></li>
-              <li class="row"><span class="row__name">Turnover</span><span class="row__price">$5.99</span></li>
-              <li class="row"><span class="row__name">NY crumb cake</span><span class="row__price">$4.99</span><span class="row__desc">Vanilla cake under cinnamon brown sugar crumb. Kelsey grew up in New York, where it is a staple.</span></li>
-              <li class="row"><span class="row__name">French toast</span><span class="row__price">$6.99</span><span class="row__desc">Croissant, brioche and sourdough soaked overnight in vanilla bean custard, baked to order with bourbon pecan caramel.</span></li>
-              <li class="row has-pic" tabindex="0" data-img="m-bread-730.webp" data-alt="Three sourdough loaves cooling on a wire rack"><span class="row__name">Bread</span><span class="row__price">$8 to $12</span></li>
+              <li class="row" data-img="menu-buns-900.webp" data-alt="A pan of cinnamon buns"><span class="row__name">Cinnamon buns</span><span class="row__price">from $5.99</span></li>
+              <li class="row" data-sketch="croissant"><span class="row__name">Croissant</span><span class="row__price">$3.99</span></li>
+              <li class="row" data-sketch="croissant:almond"><span class="row__name">Almond croissant</span><span class="row__price">$4.75</span></li>
+              <li class="row" data-sketch="croissant:chocolate"><span class="row__name">Chocolate croissant</span><span class="row__price">$4.75</span></li>
+              <li class="row" data-sketch="scone"><span class="row__name">Scone</span><span class="row__price">$4.99</span></li>
+              <li class="row" data-sketch="muffin"><span class="row__name">Muffin</span><span class="row__price">$4.99</span></li>
+              <li class="row" data-sketch="turnover"><span class="row__name">Turnover</span><span class="row__price">$5.99</span></li>
+              <li class="row" data-sketch="bar:crumbcake"><span class="row__name">NY crumb cake</span><span class="row__price">$4.99</span><span class="row__desc">Vanilla cake under cinnamon brown sugar crumb. Kelsey grew up in New York, where it is a staple.</span></li>
+              <li class="row" data-sketch="frenchtoast"><span class="row__name">French toast</span><span class="row__price">$6.99</span><span class="row__desc">Croissant, brioche and sourdough soaked overnight in vanilla bean custard, baked to order with bourbon pecan caramel.</span></li>
+              <li class="row" data-img="m-bread-730.webp" data-alt="Three sourdough loaves cooling on a wire rack"><span class="row__name">Bread</span><span class="row__price">$8 to $12</span></li>
             </ul>
           </div>
 
-          <div class="panel" role="tabpanel" id="p-bars" aria-labelledby="t-bars" data-default="m-brownie-800.webp" data-default-alt="A stack of kitchen sink brownies" hidden>
+          <div class="panel" role="tabpanel" id="p-bars" aria-labelledby="t-bars" hidden>
             <ul class="rows">
-              <li class="row has-pic" tabindex="0" data-img="m-brownie-800.webp" data-alt="A stack of kitchen sink brownies"><span class="row__name">Kitchen sink brownie</span><span class="row__price">$6.99</span><span class="row__desc">Chocolate chip cookies, crushed Oreos and three chocolates folded into fudgy brownie batter.</span></li>
-              <li class="row"><span class="row__name">Millionaire shortbread</span><span class="row__price">$4.99</span><span class="row__desc">Shortbread, salted vanilla bean caramel, dark chocolate ganache.</span></li>
-              <li class="row"><span class="row__name">Lemon bar</span><span class="row__price">$5.25</span></li>
-              <li class="row"><span class="row__name">Cheesecake bar</span><span class="row__price">$8.00</span></li>
-              <li class="row"><span class="row__name">Pecan pie bar</span><span class="row__price">$4.99</span></li>
-              <li class="row"><span class="row__name">Raspberry streusel bar</span><span class="row__price">$4.99</span></li>
-              <li class="row"><span class="row__name">Toffee bar</span><span class="row__price">$6.99</span></li>
-              <li class="row"><span class="row__name">Oatmeal cream pie</span><span class="row__price">$5.99</span></li>
-              <li class="row"><span class="row__name">NY rainbow cookies</span><span class="row__price">from $3.99</span><span class="row__desc">Layered almond cookies, sold by the pound.</span></li>
-              <li class="row"><span class="row__name">Macarons</span><span class="row__price">from $18.00</span></li>
-              <li class="row"><span class="row__name">Cookies</span><span class="row__price">from $1.99</span></li>
+              <li class="row" data-img="m-brownie-800.webp" data-alt="A stack of kitchen sink brownies"><span class="row__name">Kitchen sink brownie</span><span class="row__price">$6.99</span><span class="row__desc">Chocolate chip cookies, crushed Oreos and three chocolates folded into fudgy brownie batter.</span></li>
+              <li class="row" data-sketch="bar:millionaire"><span class="row__name">Millionaire shortbread</span><span class="row__price">$4.99</span><span class="row__desc">Shortbread, salted vanilla bean caramel, dark chocolate ganache.</span></li>
+              <li class="row" data-sketch="bar:lemon"><span class="row__name">Lemon bar</span><span class="row__price">$5.25</span></li>
+              <li class="row" data-sketch="bar:cheesecake"><span class="row__name">Cheesecake bar</span><span class="row__price">$8.00</span></li>
+              <li class="row" data-sketch="bar:pecan"><span class="row__name">Pecan pie bar</span><span class="row__price">$4.99</span></li>
+              <li class="row" data-sketch="bar:streusel"><span class="row__name">Raspberry streusel bar</span><span class="row__price">$4.99</span></li>
+              <li class="row" data-sketch="bar:toffee"><span class="row__name">Toffee bar</span><span class="row__price">$6.99</span></li>
+              <li class="row" data-sketch="oatmeal"><span class="row__name">Oatmeal cream pie</span><span class="row__price">$5.99</span></li>
+              <li class="row" data-sketch="rainbow"><span class="row__name">NY rainbow cookies</span><span class="row__price">from $3.99</span><span class="row__desc">Layered almond cookies, sold by the pound.</span></li>
+              <li class="row" data-sketch="macarons"><span class="row__name">Macarons</span><span class="row__price">from $18.00</span></li>
+              <li class="row" data-sketch="cookies"><span class="row__name">Cookies</span><span class="row__price">from $1.99</span></li>
             </ul>
           </div>
 
-          <div class="panel" role="tabpanel" id="p-cakes" aria-labelledby="t-cakes" data-default="m-slice-800.webp" data-default-alt="A slice of vanilla layer cake between chocolate and strawberry slices" hidden>
+          <div class="panel" role="tabpanel" id="p-cakes" aria-labelledby="t-cakes" hidden>
             <ul class="rows">
-              <li class="row has-pic" tabindex="0" data-img="m-slice-800.webp" data-alt="A slice of vanilla layer cake between chocolate and strawberry slices"><span class="row__name">Cake slice</span><span class="row__price">$9.99</span><span class="row__desc">Flavors change weekly: death by chocolate, cookies and cream, biscoff cookie butter, bourbon pecan caramel, strawberry, berry streusel.</span></li>
-              <li class="row"><span class="row__name">Half dozen cupcakes</span><span class="row__price">$25.99</span></li>
-              <li class="row has-pic" tabindex="0" data-img="m-cupcakes-800.webp" data-alt="Vanilla cupcakes in tulip papers on a steel tray"><span class="row__name">Dozen cupcakes</span><span class="row__price">$54.00</span><span class="row__desc">A swirl of buttercream and sprinkles, in the flavor you ask for.</span></li>
-              <li class="row has-pic" tabindex="0" data-img="h-sorry-864.webp" data-alt="A chocolate drip cake with piped chocolate buttercream"><span class="row__name">Same-day cake</span><span class="row__price">$75.00</span><span class="row__desc">Eight inches, two layers, in our best-selling flavors. Call ahead or order online.</span></li>
-              <li class="row has-pic" tabindex="0" data-img="menu-slices-896.webp" data-alt="Slices of six cake flavors on white plates"><span class="row__name">Cake tasting box</span><span class="row__price">$42.00</span><span class="row__desc">All 13 flavors in one box, packed to take home.</span></li>
-              <li class="row"><span class="row__name">Crème brûlée</span><span class="row__price">$8.00</span></li>
+              <li class="row" data-img="m-slice-800.webp" data-alt="A slice of vanilla layer cake between chocolate and strawberry slices"><span class="row__name">Cake slice</span><span class="row__price">$9.99</span><span class="row__desc">Flavors change weekly: death by chocolate, cookies and cream, biscoff cookie butter, bourbon pecan caramel, strawberry, berry streusel.</span></li>
+              <li class="row" data-img="m-half-520.webp" data-alt="Six chocolate cupcakes with white frosting and chocolate ganache"><span class="row__name">Half dozen cupcakes</span><span class="row__price">$25.99</span></li>
+              <li class="row" data-img="m-cupcakes-800.webp" data-alt="Vanilla cupcakes in tulip papers on a steel tray"><span class="row__name">Dozen cupcakes</span><span class="row__price">$54.00</span><span class="row__desc">A swirl of buttercream and sprinkles, in the flavor you ask for.</span></li>
+              <li class="row" data-img="h-sorry-864.webp" data-alt="A chocolate drip cake with piped chocolate buttercream"><span class="row__name">Same-day cake</span><span class="row__price">$75.00</span><span class="row__desc">Eight inches, two layers, in our best-selling flavors. Call ahead or order online.</span></li>
+              <li class="row" data-img="menu-slices-896.webp" data-alt="Slices of six cake flavors on white plates"><span class="row__name">Cake tasting box</span><span class="row__price">$42.00</span><span class="row__desc">All 13 flavors in one box, packed to take home.</span></li>
+              <li class="row" data-sketch="brulee"><span class="row__name">Crème brûlée</span><span class="row__price">$8.00</span></li>
             </ul>
           </div>
 
-          <div class="panel" role="tabpanel" id="p-pies" aria-labelledby="t-pies" data-default="m-smores-800.webp" data-default-alt="Two s'mores pies with toasted marshmallow, seen from above" hidden>
+          <div class="panel" role="tabpanel" id="p-pies" aria-labelledby="t-pies" hidden>
             <ul class="rows">
-              <li class="row has-pic" tabindex="0" data-img="m-smores-800.webp" data-alt="Two s'mores pies with toasted marshmallow, seen from above"><span class="row__name">Gourmet s'mores</span><span class="row__price">$42.00</span><span class="row__desc">Graham cracker crust, chocolate cremeux, ganache, toasted marshmallow.</span></li>
-              <li class="row has-pic" tabindex="0" data-img="m-reeses-800.webp" data-alt="A peanut butter pie topped with chocolate swirls and peanut butter cups"><span class="row__name">Reese's peanut butter</span><span class="row__price">$42.00</span><span class="row__desc">Graham crust, peanut butter and chocolate cremeux, ganache, Reese's on top.</span></li>
-              <li class="row"><span class="row__name">Pumpkin</span><span class="row__price">$36.00</span></li>
-              <li class="row"><span class="row__name">Apple</span><span class="row__price">$38.00</span></li>
-              <li class="row"><span class="row__name">Crumb apple</span><span class="row__price">$35.00</span></li>
-              <li class="row"><span class="row__name">Key lime</span><span class="row__price">$35.00</span></li>
-              <li class="row"><span class="row__name">Lemon meringue</span><span class="row__price">$38.00</span></li>
-              <li class="row"><span class="row__name">Blueberry</span><span class="row__price">$38.00</span></li>
-              <li class="row"><span class="row__name">Cherry</span><span class="row__price">$38.00</span></li>
-              <li class="row"><span class="row__name">Coconut cream</span><span class="row__price">$38.00</span></li>
-              <li class="row"><span class="row__name">Bourbon pecan</span><span class="row__price">from $38.00</span></li>
+              <li class="row" data-img="m-smores-800.webp" data-alt="Two s'mores pies with toasted marshmallow, seen from above"><span class="row__name">Gourmet s'mores</span><span class="row__price">$42.00</span><span class="row__desc">Graham cracker crust, chocolate cremeux, ganache, toasted marshmallow.</span></li>
+              <li class="row" data-img="m-reeses-800.webp" data-alt="A peanut butter pie topped with chocolate swirls and peanut butter cups"><span class="row__name">Reese's peanut butter</span><span class="row__price">$42.00</span><span class="row__desc">Graham crust, peanut butter and chocolate cremeux, ganache, Reese's on top.</span></li>
+              <li class="row" data-sketch="pie:pumpkin"><span class="row__name">Pumpkin</span><span class="row__price">$36.00</span></li>
+              <li class="row" data-sketch="pie:apple"><span class="row__name">Apple</span><span class="row__price">$38.00</span></li>
+              <li class="row" data-sketch="pie:crumb"><span class="row__name">Crumb apple</span><span class="row__price">$35.00</span></li>
+              <li class="row" data-sketch="pie:keylime"><span class="row__name">Key lime</span><span class="row__price">$35.00</span></li>
+              <li class="row" data-sketch="pie:meringue"><span class="row__name">Lemon meringue</span><span class="row__price">$38.00</span></li>
+              <li class="row" data-sketch="pie:blueberry"><span class="row__name">Blueberry</span><span class="row__price">$38.00</span></li>
+              <li class="row" data-sketch="pie:cherry"><span class="row__name">Cherry</span><span class="row__price">$38.00</span></li>
+              <li class="row" data-sketch="pie:coconut"><span class="row__name">Coconut cream</span><span class="row__price">$38.00</span></li>
+              <li class="row" data-sketch="pie:pecan"><span class="row__name">Bourbon pecan</span><span class="row__price">from $38.00</span></li>
             </ul>
           </div>
 
-          <div class="panel" role="tabpanel" id="p-boxes" aria-labelledby="t-boxes" data-default="h-work-1100.webp" data-default-alt="A bakery box of chocolate croissants, turnovers, croissants and scones" hidden>
+          <div class="panel" role="tabpanel" id="p-boxes" aria-labelledby="t-boxes" hidden>
             <ul class="rows">
-              <li class="row has-pic" tabindex="0" data-img="h-work-1100.webp" data-alt="A bakery box of chocolate croissants, turnovers, croissants and scones"><span class="row__name">Bakery box</span><span class="row__price">$54.00</span><span class="row__desc">Twelve pastries: scones, croissants, chocolate croissants, muffins, turnovers.</span></li>
-              <li class="row"><span class="row__name">Brunch box</span><span class="row__price">$78.00</span></li>
-              <li class="row"><span class="row__name">Bars box</span><span class="row__price">$60.00</span><span class="row__desc">An assortment of the house dessert bars.</span></li>
-              <li class="row"><span class="row__name">Cookie box</span><span class="row__price">from $19.99</span><span class="row__desc">A dozen house cookies, assorted or all one flavor.</span></li>
-              <li class="row"><span class="row__name">Holiday cookie box</span><span class="row__price">$36 to $68</span></li>
-              <li class="row"><span class="row__name">Dinner rolls</span><span class="row__price">from $8.00</span><span class="row__desc">A dozen soft, buttery yeast rolls.</span></li>
+              <li class="row" data-img="h-work-1100.webp" data-alt="A bakery box of chocolate croissants, turnovers, croissants and scones"><span class="row__name">Bakery box</span><span class="row__price">$54.00</span><span class="row__desc">Twelve pastries: scones, croissants, chocolate croissants, muffins, turnovers.</span></li>
+              <li class="row" data-img="m-brunch-800.webp" data-alt="Turnovers and glazed scones in a bakery box"><span class="row__name">Brunch box</span><span class="row__price">$78.00</span></li>
+              <li class="row" data-sketch="box:bars"><span class="row__name">Bars box</span><span class="row__price">$60.00</span><span class="row__desc">An assortment of the house dessert bars.</span></li>
+              <li class="row" data-sketch="box:cookies"><span class="row__name">Cookie box</span><span class="row__price">from $19.99</span><span class="row__desc">A dozen house cookies, assorted or all one flavor.</span></li>
+              <li class="row" data-sketch="box:holiday"><span class="row__name">Holiday cookie box</span><span class="row__price">$36 to $68</span></li>
+              <li class="row" data-sketch="box:rolls"><span class="row__name">Dinner rolls</span><span class="row__price">from $8.00</span><span class="row__desc">A dozen soft, buttery yeast rolls.</span></li>
             </ul>
           </div>
 
@@ -537,6 +538,6 @@
 
 <div class="cursor" data-cursor-el aria-hidden="true"><span></span></div>
 
-<script defer src="assets/site.js?v=4"></script>
+<script defer src="assets/site.js?v=5"></script>
 </body>
 </html>

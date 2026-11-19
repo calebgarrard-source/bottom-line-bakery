@@ -175,32 +175,301 @@ const hero = (() => {
   return { onPick: fn => listeners.push(fn) };
 })();
 
-/* ---------------------------------------------------------------- the case: tabs, and the photograph for the line you point at */
+/* ---------------------------------------------------------------- drawings: one for every line the bakery has not photographed yet.
+   Flat shapes on the ink disc of the rose mark. sketch('pie:pecan') returns the svg as a string. */
+const sketch = (() => {
+  const C = {
+    floor: '#0d0b09', crust: '#dfa860', crustD: '#b8793a', crustL: '#f2cf98', dough: '#ecd29c',
+    choc: '#6b4331', chocD: '#4a2c20', chocL: '#83573f', caramel: '#c8873a', amber: '#a8652b',
+    cream: '#fffaf0', creamD: '#e7dcc4', custard: '#fbefd0', lemon: '#f3cf47', lemonL: '#f8df74',
+    berry: '#b83a55', blue: '#4b5389', cherry: '#a8273b', pumpkin: '#d27a2c', lime: '#dfe6a2', limeD: '#97bb58',
+    pecan: '#7a4a2a', pecanL: '#9a6640', graham: '#c2935a', crumb: '#d6ab6c', crumbL: '#ecd09a', crumbD: '#b98a4d',
+    paper: '#b98a57', paperD: '#99703f', china: '#f6efe0', chinaD: '#d9ccb1'
+  };
+  const f = n => Math.round(n * 10) / 10;
+  const pt = a => f(a[0]) + ' ' + f(a[1]);
+  const E = (cx, cy, rx, ry, fill, more = '') => `<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(rx)}" ry="${f(ry)}" fill="${fill}"${more}/>`;
+  const R = (x, y, w, h, fill, r = 0, more = '') => `<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}" rx="${f(r)}" fill="${fill}"${more}/>`;
+  const P = (d, fill, more = '') => `<path d="${d}" fill="${fill}"${more}/>`;
+  const L = (d, stroke, w, more = '') => `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"${more}/>`;
+  const G = (pts, fill, more = '') => `<polygon points="${pts.map(p => f(p[0]) + ',' + f(p[1])).join(' ')}" fill="${fill}"${more}/>`;
+  const turn = (deg, x, y) => ` transform="rotate(${f(deg)} ${f(x)} ${f(y)})"`;
+  const dim = o => ` opacity="${o}"`;
+  const dice = seed => () => (seed = seed * 16807 % 2147483647) / 2147483647;   // the same scatter on every visit
+  const scatter = (n, seed, put) => { const r = dice(seed); let s = ''; for (let i = 0; i < n; i++) s += put(r, i); return s; };
+  const any = (r, list) => list[Math.floor(r() * list.length)];
+  const floor = (cx, cy, rx, ry) => E(cx, cy, rx, ry, C.floor, dim(.6));
+  const fit = (s, cx, cy, k = 1, to = 162) => `<g transform="translate(160 ${to}) scale(${k}) translate(${-cx} ${-cy})">${s}</g>`;   // centre a drawing on the disc
+  // toppings laid on a surface: at(u, v) turns 0..1 across and 0..1 deep into a point
+  const dust = (at, n, seed) => scatter(n, seed, r => { const [x, y] = at(.04 + r() * .92, .06 + r() * .88); return E(x, y, .8 + r() * 1.1, .6 + r() * .6, '#fff', dim(.9)); });
+  const bits = (at, n, seed, fills, size = 4.5) => scatter(n, seed, r => { const [x, y] = at(.08 + r() * .84, .12 + r() * .76); return E(x, y, size * (.7 + r() * .6), size * .46, any(r, fills), turn(r() * 180, x, y)); });
+  const crumbs = (at, n, seed) => scatter(n, seed, r => { const [x, y] = at(.07 + r() * .86, .12 + r() * .76); return E(x, y, 4 + r() * 5, 2.4 + r() * 2.4, any(r, [C.crumbL, C.crumbD, '#e3bd83'])); });
+
+  const croissant = kind => {
+    const half = [[40, 224, 12, 21, -66], [66, 207, 20, 27, -46], [98, 191, 27, 35, -27], [130, 181, 32, 42, -11]];
+    const seg = ([x, y, rx, ry, a]) => E(x, y + 3, rx + 2.5, ry + 2, C.crustD, turn(a, x, y)) + E(x, y, rx, ry, C.crust, turn(a, x, y)) + E(x - rx * .1, y - ry * .5, rx * .52, ry * .2, C.crustL, turn(a, x, y) + dim(.8));
+    let s = floor(160, 246, 124, 12);
+    half.forEach(h => { s += seg(h) + seg([320 - h[0], h[1], h[2], h[3], -h[4]]); });
+    s += seg([160, 177, 36, 46, 0]);
+    if (kind === 'chocolate') { let d = ''; for (let i = 0; i <= 18; i++) { const x = 74 + i * 9.6, u = (x - 62) / 196; d += (i ? ' L' : 'M') + f(x) + ' ' + f(i % 2 ? 196 - Math.sin(u * Math.PI) * 50 : 216 - Math.sin(u * Math.PI) * 16); } s += L(d, C.chocD, 3.4); }
+    if (kind === 'almond') {
+      const top = (u, v) => [62 + u * 196, 204 - Math.sin(u * Math.PI) * 54 + (v - .5) * 30];
+      s += scatter(13, 5, r => { const [x, y] = top(.08 + r() * .84, r()); return E(x, y, 8, 4, '#f7ecd2', turn(r() * 180, x, y) + ' stroke="#d9c49a" stroke-width="1"'); });
+      s += scatter(60, 9, r => { const [x, y] = top(.05 + r() * .9, r()); return E(x, y, .8 + r() * 1.2, .7 + r() * .7, '#fff', dim(.92)); });
+    }
+    return fit(s, 160, 192, .97);
+  };
+
+  const scone = () => fit(floor(160, 246, 104, 12)
+    + P('M60 212 C50 178 72 150 98 144 C104 116 140 100 166 108 C192 96 232 112 238 144 C264 152 274 188 258 214 C250 238 224 246 200 242 C176 252 142 250 120 242 C94 248 66 236 60 212Z', C.crustD)
+    + P('M66 204 C58 176 78 152 102 148 C108 122 142 108 166 116 C190 104 226 118 232 148 C256 156 264 184 252 204 C244 224 222 230 200 226 C176 236 142 234 122 227 C98 232 72 224 66 204Z', '#e2b572')
+    + scatter(16, 3, r => { const x = 84 + r() * 150, y = 150 + r() * 62; return E(x, y, 6 + r() * 8, 4 + r() * 4, any(r, [C.crustL, '#cf9a55']), dim(.7)); })
+    + P('M92 152 C108 128 148 118 170 124 C196 114 226 128 232 152 C236 166 226 172 220 162 C216 178 204 178 200 164 C192 182 176 184 172 166 C162 186 146 184 142 168 C134 182 120 180 118 164 C108 174 94 168 92 152Z', C.cream)
+    + scatter(7, 12, r => { const x = 96 + r() * 128, y = 184 + r() * 34; return E(x, y, 5 + r() * 2, 4.4 + r() * 2, '#5a2f52') + E(x - 1.5, y - 1.5, 1.6, 1.2, '#9a6a90'); }), 160, 176, 1.08);
+
+  const muffin = () => {
+    let s = floor(160, 258, 76, 10) + P('M96 178 L224 178 L211 250 Q210 258 201 258 L119 258 Q110 258 109 250Z', C.paper);
+    for (let i = 0; i < 8; i++) s += L(`M${f(106 + i * 15.4)} 182 L${f(115 + i * 12.9)} 254`, C.paperD, 2, dim(.8));
+    return fit(s + P('M78 182 C68 150 96 104 160 100 C224 104 252 150 242 182 C240 196 226 198 214 192 C196 200 124 200 106 192 C94 198 80 196 78 182Z', C.crustD)
+      + P('M82 176 C74 148 100 108 160 104 C220 108 246 148 238 176 C236 188 224 190 213 185 C195 193 125 193 107 185 C96 190 84 188 82 176Z', '#e3b470')
+      + E(134, 132, 40, 18, C.crustL, turn(-18, 134, 132) + dim(.75))
+      + scatter(7, 8, r => { const x = 104 + r() * 112, y = 124 + r() * 48; return E(x, y, 8, 7, C.blue) + E(x - 2.5, y - 2.5, 2.4, 1.8, '#8088be'); })
+      + scatter(26, 2, r => E(96 + r() * 128, 116 + r() * 60, 1 + r(), .9 + r() * .6, '#fff', dim(.85))), 160, 180, 1.1);
+  };
+
+  const crimp = (ax, ay, bx, by) => { const len = Math.hypot(bx - ax, by - ay), nx = (ay - by) / len, ny = (bx - ax) / len; let s = ''; for (let i = 1; i < 11; i++) { const x = ax + (bx - ax) * i / 11, y = ay + (by - ay) * i / 11; s += L(`M${f(x + nx * 5)} ${f(y + ny * 5)} l${f(nx * 9)} ${f(ny * 9)}`, '#cf9a55', 2.2); } return s; };
+  const turnover = () => fit(floor(160, 250, 116, 11)
+    + P('M72 244 L248 244 Q272 244 260 222 L192 104 Q178 82 164 104 L60 222 Q48 244 72 244Z', C.crustD)
+    + P('M72 234 L248 234 Q270 234 259 213 L192 98 Q178 76 164 98 L61 213 Q50 234 72 234Z', '#e6b76e')
+    + P('M100 216 L224 216 Q238 216 231 203 L187 128 Q178 113 169 128 L93 203 Q86 216 100 216Z', '#f3d6a0')
+    + crimp(61, 213, 164, 98) + crimp(192, 98, 259, 213) + L('M84 224 L238 224', '#cf9a55', 1.8) + L('M92 229 L230 229', '#cf9a55', 1.4, dim(.7))
+    + L('M150 196 l24 -11', '#8a4f24', 4.5) + L('M160 176 l19 -9', '#8a4f24', 4.5) + L('M169 157 l13 -6', '#8a4f24', 4.5)
+    + scatter(30, 6, r => { const v = r(), u = r(), x = 178 + (u - .5) * (30 + v * 110), y = 126 + v * 84; return R(x, y, 2.4, 2.4, '#fff', 0, turn(r() * 90, x, y) + dim(.9)); }), 160, 166, 1.04);
+
+  // a fluted white dish, its top edge at y0
+  const dish = (y0, y1, w0, w1) => {
+    const a = 160 - w0 / 2, b = 160 + w0 / 2, c = 160 + w1 / 2, d = 160 - w1 / 2;
+    let s = P(`M${a} ${y0} L${b} ${y0} L${c} ${y1 - 8} Q${c - 1} ${y1} ${c - 10} ${y1} L${d + 10} ${y1} Q${d + 1} ${y1} ${d} ${y1 - 8}Z`, C.china);
+    for (let i = 1; i < 9; i++) s += L(`M${f(a + i / 9 * w0)} ${y0 + 10} L${f(d + i / 9 * w1)} ${y1 - 6}`, C.chinaD, 2.2);
+    return s;
+  };
+
+  const frenchtoast = () => {
+    const cubes = [[112, 158, -14], [146, 164, 9], [182, 162, -7], [210, 154, 16], [128, 134, 11], [164, 138, -11], [196, 132, 7], [146, 110, -6], [178, 112, 13]];
+    let s = floor(160, 258, 84, 10) + dish(172, 258, 156, 132) + E(160, 172, 78, 15, '#fffdf7') + E(160, 173, 68, 11, C.chinaD);
+    cubes.forEach(([x, y, a], i) => { s += R(x - 17, y - 15, 34, 32, C.crustD, 7, turn(a, x, y)) + R(x - 17, y - 18, 34, 31, [C.crust, '#d39a48', '#e9bb72'][i % 3], 7, turn(a, x, y)) + R(x - 11, y - 14, 18, 12, C.crustL, 5, turn(a, x, y) + dim(.6)); });
+    return fit(s + L('M83 174 A78 15 0 0 0 237 174', '#fffdf7', 6)
+      + L('M104 150 C122 132 136 150 152 128 C166 108 184 132 196 122 C208 112 216 136 222 146', C.amber, 5.5) + L('M120 166 v24', C.amber, 5.5) + L('M204 164 v17', C.amber, 5.5)
+      + scatter(7, 4, r => { const x = 116 + r() * 92, y = 110 + r() * 50; return E(x, y, 6, 3.4, C.pecan, turn(r() * 180, x, y)); })
+      + scatter(36, 10, r => E(108 + r() * 108, 100 + r() * 66, .9 + r(), .8 + r() * .6, '#fff', dim(.9))), 160, 178, 1.12);
+  };
+
+  const brulee = () => fit(floor(160, 246, 104, 11) + dish(168, 244, 196, 168)
+    + E(160, 168, 98, 25, '#fffdf7') + E(160, 169, 86, 20, '#c9772a')
+    + scatter(9, 14, r => { const t = r() * 6.28, k = Math.sqrt(r()) * .8, x = 160 + Math.cos(t) * 86 * k, y = 169 + Math.sin(t) * 20 * k; return E(x, y, 7 + r() * 11, 2.6 + r() * 3, any(r, ['#7c4116', '#93531f', '#6a340f']), dim(.8)); })
+    + E(132, 161, 34, 5.5, '#eab06a', dim(.7)) + L('M150 177 l14 -5 l10 6 l16 -4', '#f2c98a', 1.6, dim(.8)), 160, 196, 1.14);
+
+  // a cut bar seen from the front corner: layers on the front and the side, the topping on the top
+  const slab = ({ x = 68, y = 232, w = 150, dx = 34, dy = -20, layers, top, deco }) => {
+    let s = G([[x - 8, y + 5], [x + w, y + 5], [x + w + dx + 6, y + dy + 5], [x + dx - 8, y + dy + 5]], C.floor, dim(.6)), yy = y;
+    layers.forEach(([fill, h, crumbly]) => {
+      s += R(x, yy - h, w, h + .5, fill) + G([[x + w, yy + .5], [x + w + dx, yy + dy + .5], [x + w + dx, yy + dy - h], [x + w, yy - h]], fill);
+      if (crumbly) s += scatter(Math.round(w * h / 120), h * 7, r => E(x + 6 + r() * (w - 12), yy - h + 5 + r() * (h - 9), 4 + r() * 5, 3 + r() * 3, any(r, [C.crumbL, C.crumbD, '#e3bd83'])));
+      yy -= h;
+    });
+    const at = (u, v) => [x + u * w + v * dx, yy + v * dy];
+    return s + G([[x + w, y], [x + w + dx, y + dy], [x + w + dx, yy + dy], [x + w, yy]], C.floor, dim(.24))
+      + G([at(0, 0), at(1, 0), at(1, 1), at(0, 1)], top) + (deco ? deco(at) : '') + L(`M${f(x)} ${f(yy)} L${f(x + w)} ${f(yy)}`, '#fff', 1.2, dim(.28));
+  };
+  const sheen = (at, c) => L(`M${pt(at(.1, .62))} L${pt(at(.56, .62))}`, c, 2.4, dim(.6));
+  const bars = {
+    millionaire: { layers: [[C.dough, 36], [C.caramel, 34], [C.choc, 18]], top: C.chocL, deco: at => sheen(at, '#b08a74') },
+    lemon: { layers: [[C.dough, 32], [C.lemon, 46]], top: C.lemonL, deco: at => dust(at, 110, 7) },
+    cheesecake: { layers: [[C.graham, 22], [C.custard, 64]], top: '#fff8e4', deco: at => sheen(at, '#fff') },
+    pecan: { layers: [[C.dough, 30], [C.amber, 44]], top: '#b9783a', deco: at => bits(at, 30, 11, [C.pecan, C.pecanL, '#5f3a20'], 5.5) },
+    streusel: { layers: [[C.dough, 28], [C.berry, 18], [C.crumb, 36, 1]], top: C.crumb, deco: at => crumbs(at, 44, 5) + bits(at, 7, 3, [C.berry], 4) },
+    toffee: { layers: [[C.dough, 34], ['#b8763a', 22], [C.choc, 18]], top: C.chocL, deco: at => bits(at, 34, 9, [C.crust, C.crustL, '#c98f4b'], 3.2) },
+    crumbcake: { layers: [['#f3dc9c', 44], [C.crumb, 46, 1]], top: C.crumb, deco: at => crumbs(at, 48, 13) + dust(at, 80, 4) }
+  };
+  const rainbow = () => {
+    const one = (x, y) => slab({ x, y, w: 66, dx: 24, dy: -14, layers: [[C.choc, 5], ['#7fb685', 15], ['#f1dc8a', 15], ['#e0646c', 15], [C.choc, 5]], top: C.chocL, deco: at => sheen(at, '#b08a74') });
+    return fit(one(52, 190) + one(180, 184) + one(112, 246), 164, 184, 1.14);
+  };
+
+  const oatmeal = () => fit(floor(160, 246, 104, 13)
+    + E(160, 226, 98, 30, '#8f5e33') + E(160, 218, 98, 30, '#b07a45')
+    + E(160, 208, 92, 28, C.creamD) + E(160, 200, 92, 28, C.cream)
+    + E(160, 188, 100, 31, '#8f5e33') + E(160, 178, 100, 31, '#bd8750')
+    + scatter(34, 6, r => { const t = r() * 6.28, k = Math.sqrt(r()) * .88, x = 160 + Math.cos(t) * 100 * k, y = 178 + Math.sin(t) * 31 * k; return E(x, y, 3 + r() * 4, 1.8 + r() * 2, any(r, ['#d8ad78', '#9c6a3b', '#cc9a62']), turn(r() * 180, x, y)); })
+    + E(126, 164, 36, 8, '#d7a873', dim(.5)), 160, 202, 1.14);
+
+  const macarons = () => {
+    const one = (x, y, k, shell, foot, fill) => {
+      let s = P(`M${f(x - 46 * k)} ${f(y + 9 * k)} C${f(x - 46 * k)} ${f(y + 40 * k)} ${f(x + 46 * k)} ${f(y + 40 * k)} ${f(x + 46 * k)} ${f(y + 9 * k)}Z`, foot);
+      for (let i = 0; i < 9; i++) s += E(x - 40 * k + i * 10 * k, y + 8 * k, 5.6 * k, 4 * k, foot);
+      s += R(x - 41 * k, y - 4 * k, 82 * k, 11 * k, fill, 5 * k);
+      for (let i = 0; i < 9; i++) s += E(x - 40 * k + i * 10 * k, y - 5 * k, 5.6 * k, 4 * k, foot);
+      return s + P(`M${f(x - 46 * k)} ${f(y - 6 * k)} C${f(x - 46 * k)} ${f(y - 42 * k)} ${f(x + 46 * k)} ${f(y - 42 * k)} ${f(x + 46 * k)} ${f(y - 6 * k)}Z`, shell) + E(x - 14 * k, y - 24 * k, 17 * k, 5 * k, '#fff', dim(.35));
+    };
+    return fit(floor(160, 252, 112, 11) + one(108, 216, .92, '#f1dfb8', '#dcc493', '#fff6df') + one(212, 216, .92, '#bcd3a2', '#a2bd86', '#f3ead0') + one(160, 157, .92, '#a7745b', '#8d5d46', C.chocD), 160, 188, 1.1);
+  };
+
+  const disc = (x, y, rx, ry, edge, face, light) => E(x, y + 7, rx, ry, edge) + E(x, y, rx, ry, face) + E(x - rx * .2, y - ry * .3, rx * .6, ry * .5, light, dim(.7));
+  const onDisc = (r, x, y, rx, ry, k = .78) => { const t = r() * 6.2832, q = Math.sqrt(r()) * k; return [x + Math.cos(t) * rx * q, y + Math.sin(t) * ry * q]; };
+  const cookies = () => {
+    const one = (x, y, rx, ry, seed) => disc(x, y, rx, ry, '#a9753f', '#d7a569', '#e3b87f')
+      + scatter(9, seed, r => { const [cx, cy] = onDisc(r, x, y, rx, ry); return E(cx, cy, 6 + r() * 3, 3.6 + r() * 2, C.chocD, turn(r() * 60 - 30, cx, cy)) + E(cx - 1.5, cy - 1.2, 2, 1.1, '#8a5f49'); });
+    return fit(floor(160, 250, 116, 12) + one(112, 140, 62, 32, 3) + one(214, 150, 58, 30, 8) + one(160, 204, 74, 38, 5), 162, 180, 1.05);
+  };
+
+  const pie = kind => {
+    const cx = 160, cy = 160, RX = 124, RY = 52, rx = 101, ry = 38;
+    const on = (X, Y) => [cx + rx * X, cy + ry * Y];                                   // a point on the filling, as on a unit circle
+    const polar = r => { const t = r() * 6.2832, k = Math.sqrt(r()) * .93; return on(Math.cos(t) * k, Math.sin(t) * k); };
+    const fill = c => E(cx, cy, rx, ry, c);
+    const crimps = front => { let s = ''; for (let i = 0; i < 28; i++) { const t = (i + .5) / 28 * 6.2832, sn = Math.sin(t); if ((sn >= 0) !== front) continue; const x = cx + (RX - 10) * Math.cos(t), y = cy + (RY - 6.5) * sn; s += E(x, y, 12, 7.5, i % 2 ? C.crustL : '#e9bd7c', turn(Math.atan2(RY * Math.cos(t), -RX * sn) * 57.3, x, y)); } return s; };
+    const lattice = () => { let s = ''; [1, -1].forEach(dir => [-.84, -.28, .28, .84].forEach(k => { const h = Math.sqrt(2.12 - k * k) / 2, d = `M${pt(on(k / 2 + h, dir * (k / 2 - h)))} L${pt(on(k / 2 - h, dir * (k / 2 + h)))}`; s += L(d, C.crustD, 13.5, ' transform="translate(1.5 2.5)"' + dim(.7)) + L(d, '#ecc281', 12); })); return s; };
+    const dollop = (x, y, k = 1) => E(x, y + 4 * k, 27 * k, 12 * k, C.creamD) + E(x, y, 26 * k, 11.5 * k, C.cream) + E(x, y - 8 * k, 18 * k, 9 * k, C.creamD) + E(x, y - 10.5 * k, 17 * k, 8.5 * k, C.cream) + E(x + k, y - 18 * k, 9.5 * k, 6 * k, C.creamD) + E(x + k, y - 20.5 * k, 8.5 * k, 5.2 * k, C.cream);
+    const toast = (x, y, a, w = 12) => E(x, y, w, w * .36, '#dba55e', turn(a, x, y) + dim(.9));
+    const tops = {
+      pumpkin: () => fill(C.pumpkin) + E(cx - 26, cy - 12, 52, 11, '#e69a4c', dim(.6)) + dollop(cx + 6, cy + 4, 1.15),
+      apple: () => fill('#c58636') + lattice(),
+      blueberry: () => fill(C.blue) + scatter(26, 4, r => { const [x, y] = polar(r); return E(x, y, 5, 3.4, '#6c75ad', dim(.8)); }) + lattice(),
+      cherry: () => fill(C.cherry) + scatter(22, 6, r => { const [x, y] = polar(r); return E(x, y, 6, 4, '#c94257', dim(.85)); }) + lattice(),
+      crumb: () => fill(C.crumb) + scatter(90, 21, r => { const [x, y] = polar(r); return E(x, y, 4 + r() * 6, 2.4 + r() * 3, any(r, [C.crumbL, C.crumbD, '#e3bd83'])); }),
+      keylime: () => {
+        const ring = []; for (let i = 0; i < 10; i++) { const t = i / 10 * 6.2832 + .3; ring.push(on(Math.cos(t) * .74, Math.sin(t) * .74)); }
+        return fill(C.lime) + E(cx - 20, cy - 10, 54, 11, '#eef1c4', dim(.7)) + ring.sort((a, b) => a[1] - b[1]).map(([x, y]) => dollop(x, y + 4, .42)).join('')
+          + E(cx, cy + 1, 22, 9.5, C.limeD) + E(cx, cy + 1, 17.5, 7.2, '#eef3bd') + L(`M${cx - 15} ${cy + 1} h30 M${cx} ${cy - 5} v12 M${cx - 10} ${cy - 3.5} l20 9 M${cx + 10} ${cy - 3.5} l-20 9`, C.limeD, 1.2);
+      },
+      meringue: () => fill(C.lemon) + P('M60 160 C56 132 82 124 96 120 C98 100 126 90 142 98 C150 78 178 76 186 96 C204 86 228 98 226 120 C246 124 266 136 260 160 A101 38 0 0 1 60 160Z', C.cream)
+        + L('M96 120 C104 132 122 134 134 124', C.creamD, 3) + L('M142 98 C148 112 166 116 178 106', C.creamD, 3) + L('M186 96 C194 108 212 110 222 102', C.creamD, 3) + L('M226 120 C230 134 246 138 254 132', C.creamD, 3) + L('M84 152 C104 162 130 160 144 148', C.creamD, 3) + L('M168 152 C186 166 216 164 232 152', C.creamD, 3)
+        + toast(118, 105, -22, 13) + toast(164, 83, 0, 13) + toast(208, 97, 18) + toast(245, 128, 34, 10) + toast(76, 131, -38, 9),
+      coconut: () => P('M60 160 C60 130 104 110 160 110 C216 110 260 130 260 160 A101 38 0 0 1 60 160Z', C.cream)
+        + L('M86 150 C112 128 150 122 178 128', C.creamD, 3) + L('M112 172 C142 152 192 148 226 158', C.creamD, 3) + L('M150 134 C176 128 208 132 228 142', C.creamD, 3)
+        + scatter(54, 17, r => { const X = r() * 1.7 - .85, Y = r() * 1.5 - 1, x = 160 + 90 * X, y = 152 + 30 * Y - (1 - X * X) * 12; return R(x - 3.5, y - 1, 7, 2, any(r, ['#d9a25c', '#c28a45', '#edc78a']), 1, turn(r() * 180, x, y)); }),
+      pecan: () => {
+        let s = fill('#8f5527');
+        [[.8, 15, 0], [.47, 9, .3], [.13, 3, .9]].forEach(([k, n, o]) => { for (let i = 0; i < n; i++) { const t = i / n * 6.2832 + o, [x, y] = on(Math.cos(t) * k, Math.sin(t) * k), a = turn(Math.atan2(ry * Math.sin(t), rx * Math.cos(t)) * 57.3, x, y); s += E(x, y + 1.5, 13.5, 6.5, '#5a3319', a) + E(x, y, 13, 6, C.pecan, a) + L(`M${f(x - 9)} ${f(y)} h18`, '#5a3319', 1.3, a) + E(x - 2, y - 2.2, 7, 1.6, C.pecanL, a); } });
+        return s;
+      }
+    };
+    return E(cx, cy + 36, 118, 30, C.floor, dim(.6))
+      + P(`M${cx - RX} ${cy} A${RX} ${RY} 0 0 0 ${cx + RX} ${cy} L${cx + RX - 18} ${cy + 28} A${RX - 18} ${RY - 14} 0 0 1 ${cx - RX + 18} ${cy + 28}Z`, C.crustD)
+      + E(cx, cy, RX, RY, C.crust) + crimps(false) + (tops[kind] || tops.pumpkin)() + crimps(true);
+  };
+
+  // an open bakery box from above, and what is packed in it
+  const box = kind => {
+    const cell = (cols, rows, i) => [66 + (i % cols + .5) * 188 / cols, 82 + (Math.floor(i / cols) + .5) * 156 / rows];
+    let s = R(74, 54, 172, 26, C.chinaD, 5) + R(56, 72, 208, 176, C.cream, 9) + R(66, 82, 188, 156, '#e6dcc6', 5);
+    if (kind === 'bars') {
+      const tiles = [[C.lemonL, at => dust(at, 26, 3)], [C.choc, at => bits(at, 9, 5, [C.dough, C.chocL, '#3a2218'], 4)], ['#b9783a', at => bits(at, 9, 7, [C.pecan, C.pecanL], 4.6)],
+        [C.crumb, at => crumbs(at, 12, 9) + dust(at, 18, 2)], [C.crumb, at => crumbs(at, 10, 4) + bits(at, 5, 6, [C.berry], 3.4)], ['#fff8e4', at => L(`M${pt(at(.16, .2))} L${pt(at(.6, .2))}`, '#fff', 2.4)]];
+      tiles.forEach(([fill, deco], i) => { const [x, y] = cell(3, 2, i); s += R(x - 26, y - 30, 52, 66, C.floor, 5, dim(.3)) + R(x - 26, y - 33, 52, 66, fill, 5) + deco((u, v) => [x - 24 + u * 48, y - 31 + v * 62]); });
+    }
+    if (kind === 'cookies') {
+      const kinds = [
+        (x, y, n) => E(x, y, 20, 20, '#d7a569') + scatter(6, n, r => { const [a, b] = onDisc(r, x, y, 20, 20, .7); return E(a, b, 3.6, 2.8, C.chocD); }),
+        (x, y, n) => E(x, y, 20, 20, '#5a382a') + scatter(7, n + 20, r => { const [a, b] = onDisc(r, x, y, 20, 20, .72); return L(`M${f(a - 4)} ${f(b)} l4 -3 l4 3`, '#f3e9d6', 1.8, turn(r() * 180, a, b)); }),
+        (x, y, n) => E(x, y, 20, 20, '#c2915a') + scatter(6, n + 40, r => { const [a, b] = onDisc(r, x, y, 20, 20, .7); return E(a, b, 3.2, 2.4, '#4d2b30') + E(a + 5, b + 3, 2.2, 1.2, '#e3c08c'); })
+      ];
+      for (let i = 0; i < 12; i++) { const [x, y] = cell(4, 3, i); s += E(x, y + 3, 20.5, 20.5, C.floor, dim(.3)) + kinds[(i + Math.floor(i / 4)) % 3](x, y, i + 1); }
+    }
+    if (kind === 'holiday') {
+      const star = (x, y, a, b, fill) => { const p = []; for (let i = 0; i < 10; i++) { const t = i / 10 * 6.2832 - 1.5708, q = i % 2 ? b : a; p.push([x + Math.cos(t) * q, y + Math.sin(t) * q]); } return G(p, fill, ` stroke="${fill}" stroke-width="3" stroke-linejoin="round"`); };
+      const tree = (x, y, k, fill) => G([[x, y - 19 * k], [x + 16 * k, y + 12 * k], [x - 16 * k, y + 12 * k]], fill, ` stroke="${fill}" stroke-width="3" stroke-linejoin="round"`);
+      const kinds = [
+        (x, y, n) => E(x, y, 20, 20, '#e6c489') + E(x, y, 15.5, 15.5, C.cream) + scatter(7, n, r => { const [a, b] = onDisc(r, x, y, 15, 15, .75); return R(a - 2.6, b - .9, 5.2, 1.8, any(r, ['#c5383e', '#3f8a5a']), .9, turn(r() * 180, a, b)); }),
+        (x, y) => star(x, y + 1, 21, 9.5, '#e6c489') + star(x, y + 1, 14.5, 6.5, '#c5383e') + E(x, y + 1, 2.2, 2.2, C.cream),
+        (x, y) => R(x - 4, y + 12, 8, 8, '#e6c489', 1.5) + tree(x, y, 1, '#e6c489') + tree(x, y + 1.5, .68, '#3f8a5a') + E(x - 3, y + 3, 1.7, 1.7, C.cream) + E(x + 3.5, y + 7, 1.7, 1.7, '#f4c542') + E(x, y - 4, 1.6, 1.6, '#c5383e')
+      ];
+      for (let i = 0; i < 12; i++) { const [x, y] = cell(4, 3, i); s += kinds[(i + Math.floor(i / 4)) % 3](x, y, i + 1); }
+    }
+    if (kind === 'rolls') for (let i = 0; i < 12; i++) { const [x, y] = cell(4, 3, i); s += E(x, y + 1, 24, 26, C.crustD) + E(x, y - 1, 22, 23, '#e2ac5e') + E(x - 5, y - 9, 11, 6.5, '#f5d8a2', dim(.85)); }
+    return fit(s, 160, 151, 1.04, 160);
+  };
+
+  const draw = { croissant, scone, muffin, turnover, frenchtoast, brulee, bar: k => fit(slab(bars[k] || bars.lemon), 160, 178, 1.2, 164), rainbow, oatmeal, macarons, cookies, pie, box };
+  return name => {
+    const [kind, variant] = String(name).split(':');
+    return `<svg viewBox="0 0 320 320" aria-hidden="true" focusable="false"><circle cx="160" cy="160" r="158" fill="#1b1814"/><circle cx="160" cy="160" r="149.5" fill="none" stroke="#f4c542" stroke-width="1.4" opacity=".85"/>${draw[kind] ? draw[kind](variant) : ''}</svg>`;
+  };
+})();
+
+/* ---------------------------------------------------------------- the case: tabs, and something to see for every line.
+   Wide screens show it in the frame beside the list. Narrower ones open it under the line you tap. */
 (() => {
   const tabs = $$('[data-tabs] .tab'), frame = $('[data-preview]');
   if (!tabs.length || !frame) return;
-  let shown = $('img', frame)?.getAttribute('src') || '';
-  const show = (file, alt) => {
-    const src = 'assets/img/' + file;
-    if (src === shown) return;
-    shown = src;
-    const img = new Image();
-    img.alt = alt; img.decoding = 'async'; img.src = src;
-    frame.append(img);
-    const on = () => requestAnimationFrame(() => {
-      if (shown !== src) { img.remove(); return; }
-      $$('img', frame).forEach(i => { if (i !== img) { i.classList.remove('is-on'); setTimeout(() => i.remove(), 600); } });
-      img.classList.add('is-on');
-    });
-    img.complete ? on() : img.addEventListener('load', on, { once: true });
+  const rows = $$('.case .row'), wide = matchMedia('(min-width: 1100px)');
+  const hit = row => $('.row__hit', row);
+
+  // a photograph where the bakery has one, a drawing where it does not
+  const visual = row => {
+    if (row.dataset.img) { const img = new Image(); img.alt = row.dataset.alt || ''; img.decoding = 'async'; img.src = 'assets/img/' + row.dataset.img; return img; }
+    const el = document.createElement('div');
+    el.className = 'sketch'; el.setAttribute('role', 'img'); el.setAttribute('aria-label', 'A drawing: ' + $('.row__name', row).textContent);
+    el.innerHTML = sketch(row.dataset.sketch);
+    return el;
   };
+  const key = row => row.dataset.img || 'drawn ' + row.dataset.sketch;
+  let shown = ($('img', frame)?.getAttribute('src') || '').replace('assets/img/', '');
+  const stage = row => {
+    const k = key(row);
+    if (k === shown) return;
+    shown = k;
+    const node = visual(row);
+    frame.append(node);
+    const on = () => requestAnimationFrame(() => {
+      if (shown !== k) { node.remove(); return; }
+      [...frame.children].forEach(c => { if (c !== node) { c.classList.remove('is-on'); setTimeout(() => c.remove(), 600); } });
+      void node.offsetWidth;
+      node.classList.add('is-on');
+    });
+    node.tagName === 'IMG' && !node.complete ? node.addEventListener('load', on, { once: true }) : on();
+  };
+
+  const mark = (row, on) => hit(row).setAttribute(wide.matches ? 'aria-pressed' : 'aria-expanded', String(on));
+  const set = (row, on) => {
+    row.classList.toggle('is-on', on);
+    mark(row, on);
+    const pic = $('.row__pic', row);
+    if (on && !wide.matches && !pic.firstChild) pic.append(visual(row));
+  };
+  const pick = (row, toggle) => {
+    const was = row.classList.contains('is-on');
+    $$('.row.is-on', row.parentElement).forEach(r => set(r, false));
+    if (toggle && was) return;
+    set(row, true);
+    if (wide.matches) stage(row);
+  };
+
+  frame.closest('.case').classList.add('is-live');
+  rows.forEach(row => {
+    const b = document.createElement('button'), more = document.createElement('div');
+    b.type = 'button'; b.className = 'row__hit';
+    b.append($('.row__name', row), $('.row__price', row));
+    more.className = 'row__more'; more.innerHTML = '<div class="row__clip"><div class="row__pic"></div></div>';
+    row.prepend(b); row.append(more);
+    mark(row, false);
+    b.addEventListener('click', () => pick(row, !wide.matches));
+    b.addEventListener('focus', () => { if (wide.matches) pick(row); });
+    row.addEventListener('pointerenter', e => { if (wide.matches && e.pointerType === 'mouse') pick(row); });
+    b.addEventListener('keydown', e => {
+      const list = $$('.row__hit', row.parentElement), to = { ArrowDown: list.indexOf(b) + 1, ArrowUp: list.indexOf(b) - 1, Home: 0, End: list.length - 1 }[e.key];
+      if (to === undefined || !list[to]) return;
+      e.preventDefault();
+      list[to].focus();
+    });
+  });
+
   const select = (tab, focus) => {
     tabs.forEach(t => { const on = t === tab; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; $('#' + t.getAttribute('aria-controls')).hidden = !on; });
     const panel = $('#' + tab.getAttribute('aria-controls'));
-    $$('.row', panel).forEach((r, n) => { r.style.setProperty('--n', n); r.classList.remove('is-on'); });
+    $$('.row', panel).forEach((r, n) => r.style.setProperty('--n', n));
     panel.classList.remove('is-swapping'); void panel.offsetWidth; panel.classList.add('is-swapping');
-    show(panel.dataset.default, panel.dataset.defaultAlt);
-    $('.row.has-pic', panel)?.classList.add('is-on');
+    pick($('.row', panel));
     if (focus) tab.focus();
   };
   tabs.forEach((tab, i) => {
@@ -211,13 +480,14 @@ const hero = (() => {
       select(tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length], true);
     });
   });
-  $$('.row.has-pic').forEach(row => {
-    const pick = () => { $$('.row.is-on', row.parentElement).forEach(r => r.classList.remove('is-on')); row.classList.add('is-on'); show(row.dataset.img, row.dataset.alt); };
-    row.addEventListener('pointerenter', pick);
-    row.addEventListener('focus', pick);
-    row.addEventListener('click', pick);
+
+  // the same line stays chosen when the layout changes between the two
+  wide.addEventListener('change', () => {
+    rows.forEach(r => { hit(r).removeAttribute('aria-pressed'); hit(r).removeAttribute('aria-expanded'); mark(r, r.classList.contains('is-on')); });
+    const panel = $('.panel:not([hidden])');
+    pick($('.row.is-on', panel) || $('.row', panel));
   });
-  $('.panel:not([hidden]) .row.has-pic')?.classList.add('is-on');
+  pick($('.panel:not([hidden]) .row'));
 })();
 
 /* ---------------------------------------------------------------- build your cake */
