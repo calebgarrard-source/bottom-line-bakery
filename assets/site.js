@@ -115,15 +115,29 @@ const hours = (() => {
 (() => {
   const els = $$('[data-reveal]');
   if (reduced || !('IntersectionObserver' in window)) { els.forEach(el => el.classList.add('in')); return; }
+  const photos = el => el.dataset.reveal === 'img' || el.dataset.reveal === 'set' ? $$('img', el) : [];
   const show = el => {
-    const imgs = el.dataset.reveal === 'img' || el.dataset.reveal === 'set' ? $$('img', el) : [];
+    const imgs = photos(el);
     let shown = false;
     const go = () => { if (!shown) { shown = true; el.classList.add('in'); } };
     if (!imgs.length) return go();
     imgs.forEach(img => { img.loading = 'eager'; });
     Promise.all(imgs.map(img => img.decode ? img.decode().catch(() => {}) : 0)).then(go);
-    setTimeout(go, 1500);   // a slow connection should not hold a section back for long
+    // a very slow connection: the frame comes in after a while anyway, and its photograph fades in when it lands
+    setTimeout(() => {
+      if (shown) return;
+      imgs.filter(img => !img.complete).forEach(img => {
+        const land = () => img.classList.remove('is-late');
+        img.classList.add('is-late');
+        img.addEventListener('load', land, { once: true });
+        img.addEventListener('error', land, { once: true });
+      });
+      go();
+    }, 2500);
   };
+  // fetch these few photographs once the first screen is in, so each is ready before its section arrives
+  const warm = () => els.forEach(el => photos(el).forEach(img => { img.loading = 'eager'; }));
+  addEventListener('load', () => ('requestIdleCallback' in window ? requestIdleCallback(warm, { timeout: 2500 }) : setTimeout(warm, 1200)));
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { show(e.target); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px', threshold: .08 });
   els.forEach(el => {
     const sibs = [...el.parentElement.children].filter(c => c.hasAttribute('data-reveal'));
