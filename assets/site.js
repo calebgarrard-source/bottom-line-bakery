@@ -111,11 +111,20 @@ const hours = (() => {
   }
 })();
 
-/* ---------------------------------------------------------------- reveal as sections arrive */
+/* ---------------------------------------------------------------- reveal as sections arrive. A frame waits until its photograph is ready, so nothing pops in half way. */
 (() => {
   const els = $$('[data-reveal]');
   if (reduced || !('IntersectionObserver' in window)) { els.forEach(el => el.classList.add('in')); return; }
-  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px', threshold: .08 });
+  const show = el => {
+    const imgs = el.dataset.reveal === 'img' || el.dataset.reveal === 'set' ? $$('img', el) : [];
+    let shown = false;
+    const go = () => { if (!shown) { shown = true; el.classList.add('in'); } };
+    if (!imgs.length) return go();
+    imgs.forEach(img => { img.loading = 'eager'; });
+    Promise.all(imgs.map(img => img.decode ? img.decode().catch(() => {}) : 0)).then(go);
+    setTimeout(go, 1500);   // a slow connection should not hold a section back for long
+  };
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { show(e.target); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px', threshold: .08 });
   els.forEach(el => {
     const sibs = [...el.parentElement.children].filter(c => c.hasAttribute('data-reveal'));
     el.style.setProperty('--d', Math.min(sibs.indexOf(el), 4));
@@ -784,7 +793,7 @@ const sketch = (() => {
     if (quote) {
       const r = quote.getBoundingClientRect();
       if (r.bottom > -200 && r.top < vh + 200) {
-        const p = clamp((vh * .86 - r.top) / (vh * .5 + r.height * .5));
+        const p = clamp((vh * .9 - r.top) / (vh * .4 + r.height * .5));   // every word is lit by the time the line sits mid-screen
         const on = Math.round(p * words.length);
         words.forEach((w, i) => w.classList.toggle('is-on', i < on));
       }
@@ -800,14 +809,21 @@ const sketch = (() => {
   const el = $('[data-cursor-el]');
   if (!el || !finePointer || reduced) return;
   const label = $('span', el);
-  let x = 0, y = 0, tx = 0, ty = 0, on = false, raf = 0;
+  let x = 0, y = 0, tx = 0, ty = 0, on = false, raf = 0, seen = false, checking = false;
   const loop = () => { x += (tx - x) * .22; y += (ty - y) * .22; el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`; raf = on || Math.abs(tx - x) > .5 || Math.abs(ty - y) > .5 ? requestAnimationFrame(loop) : 0; };
-  addEventListener('pointermove', e => {
-    tx = e.clientX; ty = e.clientY;
-    const host = e.target.closest?.('[data-cursor]');
+  // the label belongs to whatever is under the pointer now
+  const sync = target => {
+    const host = target?.closest?.('[data-cursor]');
     const want = !!host && !host.classList.contains('is-dragging');
     if (want !== on) { on = want; if (on) { label.textContent = host.dataset.cursor; x = tx; y = ty; } el.classList.toggle('is-on', on); }
     if (!raf) raf = requestAnimationFrame(loop);
+  };
+  addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; seen = true; sync(e.target); }, { passive: true });
+  // a page that scrolls under a still pointer sends no move, so look again: the label must not ride along onto the next section
+  addEventListener('scroll', () => {
+    if (!seen || checking) return;
+    checking = true;
+    requestAnimationFrame(() => { checking = false; sync(document.elementFromPoint(tx, ty)); });
   }, { passive: true });
   document.addEventListener('pointerleave', () => { on = false; el.classList.remove('is-on'); });
 })();
