@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..600,0..100;1,9..144,300..600,0..100&family=Hanken+Grotesk:wght@400..600&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="assets/img/h-birthday-1100.webp" imagesrcset="assets/img/h-birthday-640.webp 640w, assets/img/h-birthday-1100.webp 1100w" imagesizes="(min-width: 900px) 40vw, 90vw">
-<link rel="stylesheet" href="assets/site.css?v=7">
+<link rel="stylesheet" href="assets/site.css?v=9">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Bakery","name":"Bottom Line Bakery","url":"https://www.bottomlinebakery.com/","telephone":"+1-706-955-7710","address":{"@type":"PostalAddress","streetAddress":"4534 Washington Rd, Suite 3","addressLocality":"Evans","addressRegion":"GA","postalCode":"30809","addressCountry":"US"},"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Tuesday","Wednesday","Thursday","Friday"],"opens":"10:00","closes":"18:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"10:00","closes":"16:00"}],"sameAs":["https://www.instagram.com/bottomlinebakery/","https://www.facebook.com/bottomlinebakery"]}
 </script>
@@ -120,17 +120,18 @@
           </svg>
         </div>
       </div>
-    </div>
 
-    <div class="wrap hero__pick" data-enter>
-      <p class="hero__pick-label" id="pick-label">What are we celebrating?</p>
-      <div class="chips" role="group" aria-labelledby="pick-label" data-hero-chips>
-        <button class="chip is-on" type="button" data-occasion="birthday" aria-pressed="true">Birthdays</button>
-        <button class="chip" type="button" data-occasion="wedding" aria-pressed="false">Weddings</button>
-        <button class="chip" type="button" data-occasion="work" aria-pressed="false">Work things</button>
-        <button class="chip" type="button" data-occasion="sorry" aria-pressed="false">Apologies</button>
-        <button class="chip" type="button" data-occasion="party" aria-pressed="false">Parties</button>
-        <button class="chip" type="button" data-occasion="tuesday" aria-pressed="false">Tuesdays</button>
+      <!-- part of the grid: under both columns on a wide window, above the cake on a phone -->
+      <div class="hero__pick" data-enter>
+        <p class="hero__pick-label" id="pick-label">What are we celebrating?</p>
+        <div class="chips" role="group" aria-labelledby="pick-label" data-hero-chips>
+          <button class="chip is-on" type="button" data-occasion="birthday" aria-pressed="true">Birthdays</button>
+          <button class="chip" type="button" data-occasion="wedding" aria-pressed="false">Weddings</button>
+          <button class="chip" type="button" data-occasion="work" aria-pressed="false">Work things</button>
+          <button class="chip" type="button" data-occasion="sorry" aria-pressed="false">Apologies</button>
+          <button class="chip" type="button" data-occasion="party" aria-pressed="false">Parties</button>
+          <button class="chip" type="button" data-occasion="tuesday" aria-pressed="false">Tuesdays</button>
+        </div>
       </div>
     </div>
   </section>
@@ -148,7 +149,7 @@
   <section class="case" id="menu" aria-labelledby="menu-h">
     <div class="wrap">
       <header class="head" data-reveal>
-        <h2 id="menu-h">What's in the case</h2>
+        <h2 id="menu-h">What's in the <span class="ul">case</span></h2>
         <p>Baked here every morning. Pick any line to see it, then order online for pickup or delivery.</p>
       </header>
       <div class="case__grid">
@@ -249,7 +250,7 @@
   <section class="builder" id="build" aria-labelledby="build-h">
     <div class="wrap">
       <header class="head head--light" data-reveal>
-        <h2 id="build-h">Build your cake</h2>
+        <h2 id="build-h">Build your <span class="ul">cake</span></h2>
         <p>Sketch it here in a minute. Send it over and we reply within 48 hours with a quote and any questions.</p>
       </header>
 
@@ -313,6 +314,12 @@
             </div>
           </fieldset>
 
+          <!-- where the page is one column, the sentence is written out here, under the choices; beside the sketch it stays in the pinned block -->
+          <div class="ticket ticket--flow" aria-live="polite">
+            <p class="ticket__label">The bottom line</p>
+            <p class="ticket__text" data-summary>A two-tier white velvet cake in ivory buttercream.</p>
+          </div>
+
           <fieldset class="step">
             <legend><span class="step__n">6</span> When and who</legend>
             <div class="fields">
@@ -351,23 +358,31 @@
   <section class="gallery" id="cakes" aria-labelledby="cakes-h">
     <div class="wrap">
       <header class="head head--row" data-reveal>
-        <h2 id="cakes-h">Out the door lately</h2>
+        <h2 id="cakes-h">Out the door <span class="ul">lately</span></h2>
         <p>Wedding tiers, birthday cakes, cupcakes by the tray. <a class="textlink" href="https://www.instagram.com/bottomlinebakery/">See more on Instagram</a></p>
       </header>
     </div>
+    <!-- whole photographs fill the strip. The wide one comes first: it takes two places, and from the start of the strip it is never cut by the strip's edge. -->
     <div class="film" data-film data-cursor="Drag" tabindex="0" role="region" aria-label="Photographs of cakes from the bakery. Scroll sideways.">
-      <figure class="film__item film__item--tall"><img src="assets/img/g-stencil-828.webp" width="828" height="1100" alt="A buttercream cake with a stencilled rose pattern and piped rosettes" loading="lazy" decoding="async" draggable="false"></figure>
-      <figure class="film__item"><img src="assets/img/g-table-735.webp" width="735" height="1100" alt="A wedding dessert table with a two-tier white cake, candles and macarons" loading="lazy" decoding="async" draggable="false"></figure>
       <figure class="film__item film__item--wide"><img src="assets/img/g-three-1600.webp" width="1600" height="900" alt="Three slices of layer cake: chocolate, vanilla and strawberry" loading="lazy" decoding="async" draggable="false"></figure>
-      <figure class="film__item film__item--tall"><img src="assets/img/g-wedding-733.webp" width="733" height="1100" alt="A two-tier white wedding cake edged in gold leaf" loading="lazy" decoding="async" draggable="false"></figure>
-      <figure class="film__item film__item--square"><img src="assets/img/g-drip-1000.webp" width="1000" height="1000" alt="A chocolate drip cake with piped chocolate buttercream" loading="lazy" decoding="async" draggable="false"></figure>
+      <figure class="film__item"><img src="assets/img/g-stencil-828.webp" width="828" height="1100" alt="A buttercream cake with a stencilled rose pattern and piped rosettes" loading="lazy" decoding="async" draggable="false"></figure>
+      <figure class="film__item"><img src="assets/img/g-table-735.webp" width="735" height="1100" alt="A wedding dessert table with a two-tier white cake, candles and macarons" loading="lazy" decoding="async" draggable="false"></figure>
+      <figure class="film__item"><img src="assets/img/g-wedding-733.webp" width="733" height="1100" alt="A two-tier white wedding cake edged in gold leaf" loading="lazy" decoding="async" draggable="false"></figure>
+      <figure class="film__item"><img src="assets/img/g-drip-1000.webp" width="1000" height="1000" alt="A chocolate drip cake with piped chocolate buttercream" loading="lazy" decoding="async" draggable="false"></figure>
       <figure class="film__item"><img src="assets/img/g-tulip-734.webp" width="734" height="1100" alt="Vanilla cupcakes in tulip papers on a steel tray" loading="lazy" decoding="async" draggable="false"></figure>
-      <figure class="film__item film__item--tall"><img src="assets/img/g-solarium-733.webp" width="733" height="1100" alt="A white wedding cake with fresh flowers in a sunlit conservatory" loading="lazy" decoding="async" draggable="false"></figure>
-      <figure class="film__item film__item--square"><img src="assets/img/g-slices-1000.webp" width="1000" height="1000" alt="Six slices of cake in different flavors, seen from above" loading="lazy" decoding="async" draggable="false"></figure>
+      <figure class="film__item"><img src="assets/img/g-solarium-733.webp" width="733" height="1100" alt="A white wedding cake with fresh flowers in a sunlit conservatory" loading="lazy" decoding="async" draggable="false"></figure>
+      <figure class="film__item"><img src="assets/img/g-slices-1000.webp" width="1000" height="1000" alt="Six slices of cake in different flavors, seen from above" loading="lazy" decoding="async" draggable="false"></figure>
       <figure class="film__item"><img src="assets/img/g-caramel-734.webp" width="734" height="1100" alt="Caramel and strawberry cupcakes" loading="lazy" decoding="async" draggable="false"></figure>
-      <figure class="film__item film__item--tall"><img src="assets/img/g-reeses-825.webp" width="825" height="1100" alt="A peanut butter pie on a white cake stand" loading="lazy" decoding="async" draggable="false"></figure>
+      <figure class="film__item"><img src="assets/img/g-reeses-825.webp" width="825" height="1100" alt="A peanut butter pie on a white cake stand" loading="lazy" decoding="async" draggable="false"></figure>
     </div>
-    <div class="wrap film__bar" aria-hidden="true"><span class="film__track"><span class="film__thumb" data-film-thumb></span></span><span class="film__hint">Drag or scroll sideways</span></div>
+    <div class="wrap film__bar">
+      <span class="film__track" aria-hidden="true"><span class="film__thumb" data-film-thumb></span></span>
+      <span class="film__hint" aria-hidden="true">Drag or scroll sideways</span>
+      <div class="film__nav">
+        <button class="film__go" type="button" data-film-prev aria-label="Earlier photographs"><svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8H3M7 4L3 8l4 4"/></svg></button>
+        <button class="film__go" type="button" data-film-next aria-label="More photographs"><svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
+      </div>
+    </div>
   </section>
 
   <!-- STORY: the portrait holds while the years go by -->
@@ -380,7 +395,7 @@
       </div>
       <div class="story__body">
         <header class="head" data-reveal>
-          <h2 id="story-h">A pastry chef's own bakery</h2>
+          <h2 id="story-h">A pastry chef's own <span class="ul">bakery</span></h2>
           <p>Kelsey ran the pastry kitchen for Daniel Boulud before she opened her own. The short version:</p>
         </header>
         <ol class="timeline" data-timeline>
@@ -435,7 +450,7 @@
   <section class="reviews" id="reviews" aria-labelledby="reviews-h">
     <div class="wrap">
       <header class="head head--row" data-reveal>
-        <h2 id="reviews-h">4.6 on Google, from 143 reviews</h2>
+        <h2 id="reviews-h">4.6 on Google, from 143 <span class="ul">reviews</span></h2>
         <p><a class="textlink" href="https://www.google.com/maps/search/?api=1&amp;query=Bottom+Line+Bakery+4534+Washington+Rd+Evans+GA">Read them on Google</a></p>
       </header>
       <div class="quotes">
@@ -459,7 +474,7 @@
   <section class="visit" id="visit" aria-labelledby="visit-h">
     <div class="wrap visit__grid">
       <div class="visit__info" data-reveal>
-        <h2 id="visit-h">Come by the bakery</h2>
+        <h2 id="visit-h">Come by the <span class="ul">bakery</span></h2>
         <p class="status status--lg" data-status><span class="status__dot" aria-hidden="true"></span><span data-status-text>Open Tuesday to Saturday</span></p>
         <address class="visit__address">
           <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Bottom+Line+Bakery%2C+4534+Washington+Rd+Suite+3%2C+Evans%2C+GA+30809">4534 Washington Rd, Suite&nbsp;3<br>Evans, GA 30809</a>
@@ -543,6 +558,6 @@
 
 <div class="cursor" data-cursor-el aria-hidden="true"><span></span></div>
 
-<script defer src="assets/site.js?v=7"></script>
+<script defer src="assets/site.js?v=9"></script>
 </body>
 </html>

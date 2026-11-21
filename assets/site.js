@@ -30,10 +30,15 @@ document.addEventListener('click', e => {
 /* ---------------------------------------------------------------- announcement: days to the holiday */
 (() => {
   const bar = $('[data-announce]');
-  if (!bar) return;
+  // the first screen is sized to the window: it needs to know how tall this bar is, or that it is gone
+  const fit = () => root.style.setProperty('--ann', (bar && !bar.hidden ? bar.offsetHeight : 0) + 'px');
+  if (!bar) { fit(); return; }
   const days = Math.ceil((new Date(bar.dataset.until) - Date.now()) / 864e5);
-  if (!(days > 0)) { bar.hidden = true; return; }
-  $('[data-countdown]', bar).textContent = days === 1 ? '1 day to go.' : `${days} days to go.`;
+  if (days > 0) $('[data-countdown]', bar).textContent = days === 1 ? '1 day to go.' : `${days} days to go.`;
+  else bar.hidden = true;
+  fit();
+  addEventListener('resize', fit, { passive: true });
+  document.fonts?.ready.then(fit);
 })();
 
 /* ---------------------------------------------------------------- opening hours, in the bakery's own time zone */
@@ -80,6 +85,7 @@ const hours = (() => {
     nav.classList.toggle('is-solid', y > edge);
     if (!sheet || sheet.hidden) nav.classList.toggle('is-hidden', y > edge + 300 && y > last + 2 ? true : y < last - 2 ? false : nav.classList.contains('is-hidden'));
     if (dock) dock.classList.toggle('is-on', y > edge && !buildOn);
+    root.classList.toggle('nav-away', nav.classList.contains('is-hidden'));   // a pinned band moves up into the room the bar leaves
     last = y;
   };
   addEventListener('scroll', onScroll, { passive: true });
@@ -93,7 +99,7 @@ const hours = (() => {
     root.style.overflow = open ? 'hidden' : '';
     nav.classList.toggle('is-sheet', open);
     root.classList.toggle('sheet-open', open);
-    if (open) nav.classList.remove('is-hidden');
+    if (open) { nav.classList.remove('is-hidden'); root.classList.remove('nav-away'); }
   };
   toggle?.addEventListener('click', () => setSheet(sheet.hidden));
   sheet?.addEventListener('click', e => { if (e.target.closest('a')) setSheet(false); });
@@ -695,13 +701,28 @@ const sketch = (() => {
     $('[data-servings-out]', form).textContent = `About ${st.servings} people, ${TIER_COUNT[st.tiers]}`;
     $('[data-flavor-name]', form).textContent = st.flavor.name;
     $('[data-color-name]', form).textContent = st.color.name;
-    $('[data-summary]', form).textContent = sentence(st);
+    $$('[data-summary]', form).forEach(el => { el.textContent = sentence(st); });   // beside the sketch on a wide window, under the choices on one column
     return st;
   };
   form.addEventListener('input', e => update(e.target.name === 'extras' ? e.target.value : e.target.name));
   form.addEventListener('change', e => update(e.target.name === 'extras' ? e.target.value : e.target.name));
   update();
   hero?.onPick(occasion => { if (!occasion) return; const input = $$('input[name="occasion"]', form).find(i => i.value === occasion); if (input) { input.checked = true; update('occasion'); } });
+
+  /* ---- the pinned sketch fits its window. Beside the steps, it gives the sentence under it the room that sentence needs.
+     On one column it is a band that lets go where the choices end, so it is never over the fields. */
+  const band = $('.builder__stage', form), beside = $('.builder__stage .ticket', form), under = $('.ticket--flow', form), controls = $('.builder__controls', form);
+  const measure = () => {
+    if (beside?.offsetHeight) form.style.setProperty('--ticket-h', beside.offsetHeight + 'px');
+    if (under?.offsetHeight) {
+      form.style.setProperty('--tail', Math.round(controls.getBoundingClientRect().bottom - under.getBoundingClientRect().top) + 'px');
+      form.style.setProperty('--stage-h', band.offsetHeight + 'px');
+    } else form.style.removeProperty('--tail');
+  };
+  measure();
+  addEventListener('resize', measure, { passive: true });
+  document.fonts?.ready.then(measure);
+  if ('ResizeObserver' in window) { const ro = new ResizeObserver(measure); [beside, under, controls].forEach(el => el && ro.observe(el)); }
 
   /* ---- sending it: the request on paper, then the visitor's own email */
   const dialog = $('[data-receipt]'), err = $('[data-error]', form);
@@ -748,23 +769,45 @@ const sketch = (() => {
   dialog?.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
 })();
 
-/* ---------------------------------------------------------------- the strip: drag it with a mouse, swipe it with a thumb */
+/* ---------------------------------------------------------------- the strip: drag it with a mouse, swipe it with a thumb, turn it with the arrows.
+   Whole photographs fill it, and it always comes to rest on the start of a photograph. */
 (() => {
-  const film = $('[data-film]'), thumb = $('[data-film-thumb]');
+  const film = $('[data-film]'), thumb = $('[data-film-thumb]'), prev = $('[data-film-prev]'), next = $('[data-film-next]');
   if (!film) return;
+  const end = () => film.scrollWidth - film.clientWidth;
   const paint = () => {
-    if (!thumb) return;
-    const max = film.scrollWidth - film.clientWidth, w = clamp(film.clientWidth / film.scrollWidth, .08, 1), p = max > 0 ? film.scrollLeft / max : 0;
-    thumb.style.transform = `translateX(${(p * (1 - w) * 100).toFixed(2)}%) scaleX(${w.toFixed(3)})`;
+    const max = end(), w = clamp(film.clientWidth / film.scrollWidth, .08, 1), p = max > 0 ? film.scrollLeft / max : 0;
+    if (thumb) thumb.style.transform = `translateX(${(p * (1 - w) * 100).toFixed(2)}%) scaleX(${w.toFixed(3)})`;
+    // an arrow with nowhere to go is switched off; if it held the focus, the other arrow takes it
+    [[prev, film.scrollLeft < 2, next], [next, film.scrollLeft > max - 2, prev]].forEach(([btn, off, other]) => {
+      if (!btn || btn.disabled === off) return;
+      const had = off && document.activeElement === btn;
+      btn.disabled = off;
+      if (had && other && !other.disabled) other.focus();
+    });
   };
+  // where each photograph starts, measured along the strip
+  const starts = () => { const x0 = film.getBoundingClientRect().left - film.scrollLeft; return [...film.children].map(it => it.getBoundingClientRect().left - x0); };
+  const nearest = aim => Math.min(end(), starts().reduce((best, x) => Math.abs(x - aim) < Math.abs(best - aim) ? x : best, 0));
+  const go = left => film.scrollTo({ left, behavior: reduced ? 'auto' : 'smooth' });
+  const page = dir => go(nearest(film.scrollLeft + dir * (film.clientWidth + (parseFloat(getComputedStyle(film).columnGap) || 0))));
+  const step = dir => { const here = film.scrollLeft, s = starts(), to = dir > 0 ? s.find(x => x > here + 2) : s.reverse().find(x => x < here - 2); go(Math.min(end(), to ?? (dir > 0 ? end() : 0))); };
+  prev?.addEventListener('click', () => page(-1));
+  next?.addEventListener('click', () => page(1));
+  film.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    step(e.key === 'ArrowRight' ? 1 : -1);
+  });
   film.addEventListener('scroll', paint, { passive: true });
   addEventListener('resize', paint);
   paint();
-  let down = false, startX = 0, startLeft = 0, lastX = 0, v = 0, raf = 0;
+  let down = false, startX = 0, startLeft = 0, lastX = 0, v = 0, settling = 0;
   film.addEventListener('pointerdown', e => {
     if (e.pointerType !== 'mouse' || e.button !== 0) return;
     down = true; startX = lastX = e.clientX; startLeft = film.scrollLeft; v = 0;
-    cancelAnimationFrame(raf);
+    clearTimeout(settling);
+    film.classList.remove('is-settling');
     film.classList.add('is-dragging');
     film.setPointerCapture(e.pointerId);
   });
@@ -776,9 +819,12 @@ const sketch = (() => {
   const up = () => {
     if (!down) return;
     down = false;
+    // let go: carry on a little the way it was thrown, then rest on the nearest photograph's start
+    const to = nearest(film.scrollLeft - v * 14);
+    film.classList.add('is-settling');
     film.classList.remove('is-dragging');
-    const glide = () => { if (Math.abs(v) < .4) return; film.scrollLeft -= v; v *= .94; raf = requestAnimationFrame(glide); };
-    if (!reduced) glide();
+    go(to);
+    settling = setTimeout(() => film.classList.remove('is-settling'), 700);
   };
   film.addEventListener('pointerup', up);
   film.addEventListener('pointercancel', up);
@@ -791,6 +837,14 @@ const sketch = (() => {
   if (quote) {
     quote.innerHTML = quote.textContent.trim().split(/[ \n\t]+/).map(w => `<span class="w">${w}</span>`).join(' ');   // a no-break space keeps two words in one piece
     words = $$('.w', quote);
+    words[words.length - 1]?.classList.add('ul');   // "bottom line." carries the line, like the titles
+  }
+  // the bottom line under each title's word: drawn once, when the word is on screen
+  const lines = $$('.ul');
+  if (reduced || !('IntersectionObserver' in window)) lines.forEach(l => l.classList.add('is-in'));
+  else {
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -14% 0px', threshold: 1 });
+    lines.forEach(l => io.observe(l));
   }
   if (reduced) { words.forEach(w => w.classList.add('is-on')); $$('.timeline__item').forEach(i => i.classList.add('is-on')); tl?.style.setProperty('--p', 1); return; }
   let ticking = false;
